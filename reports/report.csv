@@ -1,0 +1,56 @@
+rule_id,level,title,status,expected,actual,remediation
+1.1,1,Admin password minimum length enforced,FAIL,"enabled, >=14 chars","status=enable, minimum-length=12","config system password-policy
+  set status enable
+  set minimum-length 14
+end"
+1.7,2,Admin password policy enforces character-type complexity,PASS,all complexity minimums >=1,"min-lower-case-letter=1, min-upper-case-letter=1, min-number=1, min-non-alphanumeric=1","config system password-policy
+  set status enable
+  set min-lower-case-letter 1
+  set min-upper-case-letter 1
+  set min-number 1
+  set min-non-alphanumeric 1
+end"
+1.2,1,Admin lockout threshold and duration configured,PASS,"threshold<=3, duration>=60s","threshold=3, duration=60s","config system global
+  set admin-lockout-threshold 3
+  set admin-lockout-duration 60
+end"
+1.3,1,Administrative idle timeout set to <=5 minutes,PASS,<=5 minutes,admintimeout=5 minutes,"config system global
+  set admintimeout 5
+end"
+1.4,1,Only HTTPS/SSH (not HTTP/Telnet) permitted for admin access on interfaces,FAIL,no interface allows http/telnet,interfaces with http/telnet allowed: ['port1'],"config system interface
+  edit <interface>
+    unset allowaccess   ! then re-add only https, ssh (and ping if needed)
+    set allowaccess https ssh
+  next
+end"
+1.8,1,"Default 'admin' account renamed, disabled, or restricted by trusted hosts",PASS,'admin' absent or trusthost-restricted,no account named 'admin' exists,"config system admin
+  edit admin
+    set trusthost1 <mgmt-subnet>/<mask>
+  next
+end
+! or rename via GUI/API (rename not supported directly in CLI - create a new named admin with same rights and disable/delete 'admin')"
+1.5,2,Pre-login administrative disclaimer/banner configured,FAIL,enabled,pre-login-banner=disable,"config system global
+  set pre-login-banner enable
+end
+config system replacemsg admin pre_admin-disclaimer-text
+  set buffer ""Authorized users only. All activity may be monitored and reported.""
+end"
+1.6,2,Auto-install of configuration/firmware from USB is disabled,FAIL,both disabled,"auto-install-config=enable, auto-install-image=enable","config system auto-install
+  set auto-install-config disable
+  set auto-install-image disable
+end"
+2.1,1,"SNMP restricted to v3 (no v1/v2c communities), or disabled",PASS,disabled or v3-only,"snmp_enabled=False, v1/v2c_communities=0","config system snmp sysinfo
+  set status disable   ! if SNMP unused, else configure snmpv3 only
+end
+config system snmp community
+  ! remove all v1/v2c communities
+end"
+2.2,1,NTP synchronization enabled (accurate log timestamps),PASS,ntpsync enabled,ntpsync=enable,"config system ntp
+  set ntpsync enable
+  set type custom
+  ! set trusted NTP servers
+end"
+3.1,1,Event logging enabled to a remote target (FortiAnalyzer/syslog),FAIL,remote logging enabled with server set,"status=disable, server=unset","config log syslogd setting
+  set status enable
+  set server <syslog-server-ip>
+end"

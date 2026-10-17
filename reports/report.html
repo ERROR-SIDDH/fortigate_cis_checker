@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FortiGate CIS Benchmark Report - 172.20.80.130</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; color: #1f2328; background: #f6f8fa; }
+  h1 { margin-bottom: 0.2rem; }
+  .meta { color: #57606a; margin-bottom: 1.5rem; }
+  .summary { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .card { background: white; border: 1px solid #d0d7de; border-radius: 8px; padding: 1rem 1.5rem; }
+  .card .num { font-size: 1.8rem; font-weight: 700; }
+  table { border-collapse: collapse; width: 100%; background: white; border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid #eaeef2; vertical-align: top; font-size: 0.9rem; }
+  th { background: #f0f3f6; }
+  .badge { color: white; padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+  pre { white-space: pre-wrap; margin: 0; font-size: 0.8rem; background: #f6f8fa; padding: 0.4rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+  <h1>FortiGate CIS Benchmark Compliance Report</h1>
+  <div class="meta">Target: 172.20.80.130 &middot; Generated: 2026-10-17T15:34:54.800717+00:00Z</div>
+
+  <div class="summary">
+    <div class="card"><div class="num" style="color:#1a7f37">6</div>PASS</div>
+    <div class="card"><div class="num" style="color:#c0392b">5</div>FAIL</div>
+    <div class="card"><div class="num" style="color:#b7791f">0</div>WARN</div>
+    <div class="card"><div class="num" style="color:#6b7280">0</div>ERROR</div>
+    <div class="card"><div class="num">54.5%</div>Compliance score</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Level</th><th>Title</th><th>Status</th><th>Expected</th><th>Actual</th><th>Remediation</th></tr>
+    </thead>
+    <tbody>
+      
+            <tr>
+              <td>1.1</td>
+              <td>1</td>
+              <td>Admin password minimum length enforced</td>
+              <td><span class="badge" style="background:#c0392b">FAIL</span></td>
+              <td>enabled, &gt;=14 chars</td>
+              <td>status=enable, minimum-length=12</td>
+              <td><pre>config system password-policy
+  set status enable
+  set minimum-length 14
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>1.7</td>
+              <td>2</td>
+              <td>Admin password policy enforces character-type complexity</td>
+              <td><span class="badge" style="background:#1a7f37">PASS</span></td>
+              <td>all complexity minimums &gt;=1</td>
+              <td>min-lower-case-letter=1, min-upper-case-letter=1, min-number=1, min-non-alphanumeric=1</td>
+              <td><pre>config system password-policy
+  set status enable
+  set min-lower-case-letter 1
+  set min-upper-case-letter 1
+  set min-number 1
+  set min-non-alphanumeric 1
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>1.2</td>
+              <td>1</td>
+              <td>Admin lockout threshold and duration configured</td>
+              <td><span class="badge" style="background:#1a7f37">PASS</span></td>
+              <td>threshold&lt;=3, duration&gt;=60s</td>
+              <td>threshold=3, duration=60s</td>
+              <td><pre>config system global
+  set admin-lockout-threshold 3
+  set admin-lockout-duration 60
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>1.3</td>
+              <td>1</td>
+              <td>Administrative idle timeout set to &lt;=5 minutes</td>
+              <td><span class="badge" style="background:#1a7f37">PASS</span></td>
+              <td>&lt;=5 minutes</td>
+              <td>admintimeout=5 minutes</td>
+              <td><pre>config system global
+  set admintimeout 5
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>1.4</td>
+              <td>1</td>
+              <td>Only HTTPS/SSH (not HTTP/Telnet) permitted for admin access on interfaces</td>
+              <td><span class="badge" style="background:#c0392b">FAIL</span></td>
+              <td>no interface allows http/telnet</td>
+              <td>interfaces with http/telnet allowed: [&#x27;port1&#x27;]</td>
+              <td><pre>config system interface
+  edit &lt;interface&gt;
+    unset allowaccess   ! then re-add only https, ssh (and ping if needed)
+    set allowaccess https ssh
+  next
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>1.8</td>
+              <td>1</td>
+              <td>Default &#x27;admin&#x27; account renamed, disabled, or restricted by trusted hosts</td>
+              <td><span class="badge" style="background:#1a7f37">PASS</span></td>
+              <td>&#x27;admin&#x27; absent or trusthost-restricted</td>
+              <td>no account named &#x27;admin&#x27; exists</td>
+              <td><pre>config system admin
+  edit admin
+    set trusthost1 &lt;mgmt-subnet&gt;/&lt;mask&gt;
+  next
+end
+! or rename via GUI/API (rename not supported directly in CLI - create a new named admin with same rights and disable/delete &#x27;admin&#x27;)</pre></td>
+            </tr>
+            
+            <tr>
+              <td>1.5</td>
+              <td>2</td>
+              <td>Pre-login administrative disclaimer/banner configured</td>
+              <td><span class="badge" style="background:#c0392b">FAIL</span></td>
+              <td>enabled</td>
+              <td>pre-login-banner=disable</td>
+              <td><pre>config system global
+  set pre-login-banner enable
+end
+config system replacemsg admin pre_admin-disclaimer-text
+  set buffer &quot;Authorized users only. All activity may be monitored and reported.&quot;
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>1.6</td>
+              <td>2</td>
+              <td>Auto-install of configuration/firmware from USB is disabled</td>
+              <td><span class="badge" style="background:#c0392b">FAIL</span></td>
+              <td>both disabled</td>
+              <td>auto-install-config=enable, auto-install-image=enable</td>
+              <td><pre>config system auto-install
+  set auto-install-config disable
+  set auto-install-image disable
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>2.1</td>
+              <td>1</td>
+              <td>SNMP restricted to v3 (no v1/v2c communities), or disabled</td>
+              <td><span class="badge" style="background:#1a7f37">PASS</span></td>
+              <td>disabled or v3-only</td>
+              <td>snmp_enabled=False, v1/v2c_communities=0</td>
+              <td><pre>config system snmp sysinfo
+  set status disable   ! if SNMP unused, else configure snmpv3 only
+end
+config system snmp community
+  ! remove all v1/v2c communities
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>2.2</td>
+              <td>1</td>
+              <td>NTP synchronization enabled (accurate log timestamps)</td>
+              <td><span class="badge" style="background:#1a7f37">PASS</span></td>
+              <td>ntpsync enabled</td>
+              <td>ntpsync=enable</td>
+              <td><pre>config system ntp
+  set ntpsync enable
+  set type custom
+  ! set trusted NTP servers
+end</pre></td>
+            </tr>
+            
+            <tr>
+              <td>3.1</td>
+              <td>1</td>
+              <td>Event logging enabled to a remote target (FortiAnalyzer/syslog)</td>
+              <td><span class="badge" style="background:#c0392b">FAIL</span></td>
+              <td>remote logging enabled with server set</td>
+              <td>status=disable, server=unset</td>
+              <td><pre>config log syslogd setting
+  set status enable
+  set server &lt;syslog-server-ip&gt;
+end</pre></td>
+            </tr>
+            
+    </tbody>
+  </table>
+</body>
+</html>
