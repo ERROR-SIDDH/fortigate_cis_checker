@@ -81,7 +81,7 @@ tr.ctl{cursor:pointer}tr.ctl td.id:before{content:"+ ";color:var(--mute)}tr.ctl.
 code{font:13px var(--mono);background:var(--paper2);padding:1px 6px}
 .note{border-left:3px solid var(--red);padding:4px 0 4px 16px;margin-top:28px;color:#3b392f;max-width:44em}
 .tcode{margin-top:18px;background:var(--ink);color:#e7e3d6;padding:20px 24px}.tcode pre{font-size:13px;overflow:auto}
-.bad{color:var(--red)}
+.bad{color:var(--red)}.pw{display:block;color:var(--mute);font-size:13.5px;margin-top:2px}
 @media(max-width:900px){.two2,.gl{grid-template-columns:1fr}.det dl{grid-template-columns:1fr;gap:2px}}
 /* start */
 .dark{background:var(--ink);color:var(--paper);border-top:0}
@@ -121,6 +121,19 @@ footer{padding:40px 0;font-size:13px;color:var(--mute)}footer .wrap{display:flex
 <div class="mono"><b>02</b> — Controls</div>
 <div><h2>Nineteen checks across access, services and logging.</h2>
 <p class="sub">Level 1 is baseline hardening; Level 2 is stricter. Thirteen of the checks can be corrected automatically. <b>Click a row</b> for why it matters, which setting is read, the exact pass condition, the fix, and cautions.</p>
+<div class="why rv"><h3 style="margin-top:48px">Why do compliance checks exist?</h3>
+<p class="sub">A firewall sits between your network and everything hostile. If it is weakly configured, an attacker doesn't need to defeat it: they simply walk through the settings you left alone.</p>
+<div class="gl" style="margin-top:22px">
+<div><b>Defaults favour convenience</b>A new device ships so that it is easy to set up: HTTP and Telnet may be open, logging is off, passwords can be short. Nobody has made it safe yet; that is your job.</div>
+<div><b>Attackers use known weaknesses</b>Breaches rarely need clever new exploits. Guessable passwords, clear-text management and missing logs are found by automated scans within minutes of a device going online.</div>
+<div><b>“Hardened” needs a definition</b>Without a shared checklist, “secure” is an opinion. A benchmark such as CIS turns it into specific, testable settings, so two people reach the same verdict.</div>
+<div><b>Evidence for audits</b>Auditors and regulators ask you to show your controls. A repeatable report with a date and a score is that evidence, and rerunning it catches settings that drift back.</div></div>
+<p class="note"><b>How to read each rule:</b> every control answers three questions. <i>What is it?</i> The setting in plain words. <i>Why does it matter?</i> The attack or failure it prevents. <i>What does passing look like?</i> The exact value tested. Click any row below to see all three.</p>
+<div class="gl" style="margin-top:22px">
+<div><b>1.x · Access &amp; management</b>Who can log in to the firewall, how, and how carefully. Because it controls every other setting, it is the first thing an attacker targets.</div>
+<div><b>2.x · Network services</b>Extra services the firewall runs, such as SNMP and time sync. Each one is another door and another thing to trust.</div>
+<div><b>3.x · Logging</b>The record of what happened. Without it you cannot detect an intrusion, trace it, or prove what occurred.</div>
+<div><b>Level 1 vs Level 2</b>Level 1 is baseline hardening any site should have. Level 2 is stricter and may cost convenience, so it suits higher-risk environments.</div></div></div>
 <div class="filters" id="flt"></div>
 <table><thead><tr><th>ID</th><th>Level</th><th>Control</th><th style="text-align:right">Remediation</th></tr></thead><tbody id="tb"></tbody></table></div></div></div></section>
 
@@ -285,6 +298,26 @@ const C=[["1.1",1,"Admin password minimum length",1],["1.2",1,"Admin lockout thr
 ["1.9",1,"Strong cryptography enforced",1],["1.10",1,"HTTP admin redirected to HTTPS",1],["1.11",1,"Admin HTTPS refuses TLS 1.0 and 1.1",1],["1.12",1,"Maintainer recovery account disabled",1],["1.13",1,"Static-key TLS ciphers disabled",1],["1.14",2,"Config revision saved on logout",1],["1.15",2,"SCP config download disabled",1],
 ["2.1",1,"SNMP disabled or v3-only",0],["2.2",1,"NTP synchronisation enabled",1],["3.1",1,"Logs sent to remote syslog or FortiAnalyzer",0],["3.2",1,"Every accept policy logs traffic",0]];
 let F='all';const fl=$('#flt');[['all','All 19'],['1','Level 1'],['2','Level 2'],['fx','Auto-fix']].forEach(([k,l])=>{const b=document.createElement('button');b.className='fb'+(k==='all'?' on':'');b.textContent=l;b.onclick=()=>{F=k;fl.querySelectorAll('.fb').forEach(x=>x.classList.toggle('on',x===b));draw()};fl.append(b)});
+const E={
+"1.1":["How many characters an admin password must have.","Short passwords are cracked or guessed quickly; one weak admin password gives control of the whole firewall."],
+"1.2":["The account locks for a while after a few wrong passwords.","Without it an attacker can try thousands of passwords against the login page, unobserved."],
+"1.3":["How long an idle admin session stays logged in.","A walked-away laptop or forgotten browser tab becomes an open door to the firewall."],
+"1.4":["Whether the management interface accepts unencrypted HTTP or Telnet.","Anyone on the network path can read the admin password as it is sent, then log in as the admin."],
+"1.5":["A legal warning shown before login.","Without a notice, it is harder to show that unauthorised access was a deliberate violation, and staff are not reminded the device is monitored."],
+"1.6":["Whether plugging in a USB drive can load a new config or firmware.","Someone with brief physical access could replace the configuration or firmware without ever logging in."],
+"1.7":["Whether passwords must mix letters, numbers and symbols.","Passwords built from one character type are far easier to guess or crack."],
+"1.8":["The built-in account named “admin”.","Every attacker already knows the username, so only the password stands in the way. Restricting where it can log in from removes most of that risk."],
+"1.9":["A switch that allows only strong encryption algorithms.","Weak algorithms let an attacker with network access decrypt or tamper with traffic to and from the firewall."],
+"1.10":["Automatically sends HTTP admin visits to HTTPS.","An admin who types the address without https:// would otherwise send the password in clear text."],
+"1.11":["Which TLS versions the admin web page accepts.","TLS 1.0 and 1.1 have known flaws; allowing them lets an attacker force a weaker, breakable connection."],
+"1.12":["A special console account used to recover a lost admin password.","Anyone with physical or serial access can reset the admin password, so a stolen or unattended device can be taken over."],
+"1.13":["Old-style encryption that reuses one long-term key.","If that key is ever stolen, every previously recorded session can be decrypted afterwards."],
+"1.14":["Saves a copy of the configuration when an admin logs out.","Without history you cannot undo a bad change or see who changed what."],
+"1.15":["Lets an admin copy files, including the full config, over SSH.","The configuration contains secrets; an easy download path makes bulk theft simple."],
+"2.1":["A management protocol used by monitoring tools.","v1 and v2c send a shared “community” password in clear text; anyone who captures it can read or change device data."],
+"2.2":["Keeps the firewall's clock correct using a time server.","If clocks are wrong, logs from different devices cannot be lined up, which makes tracing an intrusion unreliable and weakens evidence."],
+"3.1":["Sends copies of logs to another server.","An intruder who takes over the firewall can erase its local logs. A remote copy is the record they cannot reach."],
+"3.2":["Whether each allow-rule records the traffic it permits.","If traffic is allowed but not logged, you cannot see what crossed the firewall during an incident."]};
 const D={
 "1.1":["Short passwords fall quickly to guessing and brute force.","system/password-policy: status, minimum-length","Policy enabled and minimum length ≥ 14.","config system password-policy → set status enable, set minimum-length 14","Existing passwords are not rewritten; only new or changed ones are held to the rule."],
 "1.2":["Limits online password guessing against the admin login.","system/global: admin-lockout-threshold, admin-lockout-duration","Threshold 1 to 3 and duration ≥ 60 s. A threshold of 0 (disabled) fails.","config system global → set admin-lockout-threshold 3, set admin-lockout-duration 60","A legitimate admin who mistypes three times is locked out for a minute."],
@@ -305,7 +338,7 @@ const D={
 "2.2":["Correct timestamps are essential for log correlation and investigations.","system/ntp: ntpsync","enable","set ntpsync enable","Reachability of the configured servers is not verified."],
 "3.1":["Logs stored only on the device can be erased by an intruder or lost with it.","log.syslogd/setting: status, server","Enabled and a server set.","config log syslogd setting → set status enable, set server <ip>","Only the first syslog target is checked, not FortiAnalyzer. No auto-fix: it needs a server address only you know."],
 "3.2":["Without traffic logs you cannot see what the firewall allowed.","firewall/policy: action, logtraffic","Every accept policy has logtraffic all or utm.","Per policy: set logtraffic all","No auto-fix: per-policy edits, and full logging can raise log volume noticeably."]};
-function draw(){const e=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');$('#tb').innerHTML=C.filter(c=>F==='all'||(F==='fx'?c[3]:String(c[1])===F)).map(c=>{const d=D[c[0]];return `<tr class="ctl" data-id="${c[0]}"><td class="id">${c[0]}</td><td class="lv">L${c[1]}</td><td>${c[2]}</td><td class="fx" style="color:${c[3]?'var(--green)':'var(--mute)'}">${c[3]?'one-click':'manual'}</td></tr><tr class="det" data-d="${c[0]}"><td colspan="4"><dl><dt>Why</dt><dd>${e(d[0])}</dd><dt>Reads</dt><dd><code>${e(d[1])}</code></dd><dt>Passes when</dt><dd>${e(d[2])}</dd><dt>Fix</dt><dd><code>${e(d[3])}</code></dd>${d[4]?`<dt>Caution</dt><dd>${e(d[4])}</dd>`:''}</dl></td></tr>`}).join('')}
+function draw(){const e=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');$('#tb').innerHTML=C.filter(c=>F==='all'||(F==='fx'?c[3]:String(c[1])===F)).map(c=>{const d=D[c[0]];return `<tr class="ctl" data-id="${c[0]}"><td class="id">${c[0]}</td><td class="lv">L${c[1]}</td><td>${c[2]}<small class="pw">${e(E[c[0]][0])}</small></td><td class="fx" style="color:${c[3]?'var(--green)':'var(--mute)'}">${c[3]?'one-click':'manual'}</td></tr><tr class="det" data-d="${c[0]}"><td colspan="4"><dl><dt>What it is</dt><dd>${e(E[c[0]][0])}</dd><dt>If ignored</dt><dd>${e(E[c[0]][1])}</dd><dt>Purpose</dt><dd>${e(d[0])}</dd><dt>Reads</dt><dd><code>${e(d[1])}</code></dd><dt>Passes when</dt><dd>${e(d[2])}</dd><dt>Fix</dt><dd><code>${e(d[3])}</code></dd>${d[4]?`<dt>Caution</dt><dd>${e(d[4])}</dd>`:''}</dl></td></tr>`}).join('')}
 $('#tb').onclick=e=>{const r=e.target.closest('tr.ctl');if(!r)return;r.classList.toggle('open');$('#tb').querySelector(`[data-d="${r.dataset.id}"]`).classList.toggle('open')};draw();
 /* diff */
 (()=>{const L=[["strong-crypto","disable","enable"],["admin-maintainer","enable","disable"],["admin-scp","enable","disable"]];
