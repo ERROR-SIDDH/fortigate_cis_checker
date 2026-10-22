@@ -4,229 +4,190 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FortiGate CIS Compliance Checker</title>
-<meta name="description" content="A read-only Python tool that audits a FortiGate firewall against CIS FortiGate 7.x hardening controls.">
+<meta name="description" content="Audit a FortiGate against 19 CIS-style hardening controls. The scanner is read-only; fixes are a separate, undoable step.">
+<meta name="theme-color" content="#f1eee6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #ffffff;
-    --fg: #1f2328;
-    --muted: #59636e;
-    --line: #d1d9e0;
-    --code-bg: #f6f8fa;
-    --link: #0969da;
-    --pass: #1a7f37;
-    --fail: #cf222e;
-    color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0d1117;
-      --fg: #e6edf3;
-      --muted: #9198a1;
-      --line: #30363d;
-      --code-bg: #161b22;
-      --link: #4493f8;
-      --pass: #3fb950;
-      --fail: #f85149;
-      color-scheme: dark;
-    }
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--fg);
-    font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  }
-  main {
-    max-width: 46rem;
-    margin: 0 auto;
-    padding: 3rem 1.25rem 4rem;
-  }
-  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.5rem; }
-  h2 { font-size: 1.3rem; margin: 2.75rem 0 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--line); }
-  h3 { font-size: 1.05rem; margin: 1.75rem 0 0.5rem; }
-  p, ul, ol { margin: 0 0 1rem; }
-  li { margin-bottom: 0.3rem; }
-  a { color: var(--link); }
-  .lede { font-size: 1.1rem; color: var(--muted); margin-bottom: 1.25rem; }
-  .links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 0 0 1rem; padding: 0; list-style: none; }
-  .note { font-size: 0.9rem; color: var(--muted); }
-  code, pre { font: 0.875rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
-  pre {
-    background: var(--code-bg);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.9rem 1rem;
-    overflow-x: auto;
-    margin: 0 0 1rem;
-  }
-  pre code { background: none; padding: 0; }
-  .table-wrap { overflow-x: auto; margin: 0 0 1rem; }
-  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
-  th, td { text-align: left; padding: 0.45rem 0.7rem; border: 1px solid var(--line); vertical-align: top; }
-  th { background: var(--code-bg); font-weight: 600; }
-  .pass { color: var(--pass); font-weight: 600; }
-  .fail { color: var(--fail); font-weight: 600; }
-  .score { font-size: 1.05rem; }
-  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
+:root{--paper:#f1eee6;--paper2:#e9e5da;--ink:#16150f;--mute:#6b675b;--rule:#16150f26;--red:#d6361b;--green:#1d6b4a;--amber:#a86a00;
+--serif:"Instrument Serif",Georgia,"Times New Roman",serif;--sans:"Instrument Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+*{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font:17px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit}::selection{background:var(--ink);color:var(--paper)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.rule{border:0;border-top:1px solid var(--ink);opacity:.9}.hair{border-top:1px solid var(--rule)}
+/* masthead */
+.mast{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--ink)}
+.mast nav{display:flex;gap:28px}.mast a{text-decoration:none}.mast nav a:hover,.mast .gh:hover{color:var(--red)}
+.brand{font:400 22px var(--serif);letter-spacing:-.01em;text-transform:none}.brand i{color:var(--red);font-style:normal}
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:64px;padding:72px 0 80px;align-items:end}
+.kicker{display:flex;gap:18px;color:var(--mute);margin-bottom:28px}.kicker span:first-child{color:var(--red)}
+h1{font:400 clamp(52px,8vw,112px)/.94 var(--serif);letter-spacing:-.035em}
+h1 em{font-style:italic;color:var(--red)}
+.lede{font-size:19px;max-width:30em;margin-top:32px;color:#3b392f}
+.cta{display:flex;gap:12px;margin-top:36px;flex-wrap:wrap}
+.btn{display:inline-block;padding:14px 22px;border:1px solid var(--ink);font:500 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;background:transparent;color:var(--ink);cursor:pointer;transition:.18s}
+.btn.solid{background:var(--ink);color:var(--paper)}.btn:hover{background:var(--red);border-color:var(--red);color:#fff}
+.big{position:relative;border:1px solid var(--ink);padding:26px 28px 22px;background:var(--paper2)}
+.big .mono{color:var(--mute)}.big .num{font:400 clamp(96px,13vw,170px)/.9 var(--serif);letter-spacing:-.05em;margin:14px 0 6px;display:flex;align-items:flex-start}
+.big .num sup{font-size:.32em;margin:.18em 0 0 .06em;letter-spacing:0}
+.big p{font-size:14px;color:var(--mute);max-width:24em}
+.bar{display:flex;gap:3px;margin-top:18px}.bar i{flex:1;height:10px;background:var(--rule)}.bar i.p{background:var(--green)}.bar i.f{background:var(--red)}
+/* sections */
+section{padding:96px 0;border-top:1px solid var(--ink)}
+.sec{display:grid;grid-template-columns:200px 1fr;gap:40px}
+.sec>.mono{color:var(--mute);padding-top:14px}.sec>.mono b{color:var(--red);font-weight:500}
+h2{font:400 clamp(36px,5vw,66px)/1 var(--serif);letter-spacing:-.03em;max-width:15em}
+.sub{margin-top:24px;max-width:36em;color:#3b392f}
+/* ledger */
+.ledger{margin-top:56px;font-family:var(--mono);font-size:13.5px;position:relative}
+.ledger .r{display:grid;grid-template-columns:56px 40px 1fr auto;gap:16px;padding:13px 0;border-top:1px solid var(--rule);align-items:baseline;cursor:pointer;transition:background .15s}
+.ledger .r:hover{background:var(--paper2)}.ledger .head{cursor:default;color:var(--mute);text-transform:uppercase;font-size:11px;letter-spacing:.08em;border-top:1px solid var(--ink)}.ledger .head:hover{background:none}
+.ledger .t{font-family:var(--sans);font-size:16px}.stamp{font-size:11px;letter-spacing:.1em;padding:2px 9px;border:1px solid currentColor}
+.PASS{color:var(--green)}.FAIL{color:var(--red)}
+.ledger .d{grid-column:3/5;display:none;color:var(--mute);font-size:12.5px;line-height:1.7;padding-top:4px;white-space:pre-wrap}.ledger .r.open .d{display:block}
+.ledger .r.hid{opacity:0;transform:translateY(6px)}.ledger .r{transition:opacity .4s,transform .4s,background .15s}
+.scanline{position:absolute;left:0;right:0;height:2px;background:var(--red);top:0;opacity:0;pointer-events:none}
+.ledger .end{border-top:1px solid var(--ink);padding-top:14px;display:flex;justify-content:space-between;color:var(--mute);font-size:12px}
+/* index table */
+.filters{display:flex;gap:8px;margin:48px 0 0}.fb{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);background:none;padding:7px 14px;cursor:pointer;color:var(--mute)}.fb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+table{width:100%;border-collapse:collapse;margin-top:18px}th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 0;border-bottom:1px solid var(--ink)}
+td{padding:14px 0;border-bottom:1px solid var(--rule);vertical-align:baseline}td.id,td.lv,td.fx{font:13px var(--mono)}td.id{width:70px;color:var(--red)}td.lv{width:60px;color:var(--mute)}td.fx{width:150px;text-align:right}
+tr:hover td{background:var(--paper2)}
+/* safety */
+.cmp{margin-top:56px;border:1px solid var(--ink)}.cmp .row{display:grid;grid-template-columns:1.1fr 1fr 1fr}.cmp .row>div{padding:16px 20px;border-top:1px solid var(--rule);font-size:15px}.cmp .row>div+div{border-left:1px solid var(--rule)}
+.cmp .row:first-child>div{border-top:0;background:var(--ink);color:var(--paper);font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cmp .y{color:var(--green)}.cmp .n{color:var(--red)}.cmp code{font:13px var(--mono)}
+/* diff demo */
+.diff{margin-top:56px;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--ink)}
+.diff>div{padding:28px}.diff>div+div{border-left:1px solid var(--ink);background:var(--paper2)}
+pre{font:13.5px/1.9 var(--mono);white-space:pre-wrap}.add{color:var(--green)}.del{color:var(--red);text-decoration:line-through;text-decoration-thickness:1px}
+.diff .mono{color:var(--mute);display:block;margin-bottom:14px}
+.toggle{display:flex;gap:0;margin-top:24px}.toggle .btn+.btn{margin-left:-1px}.toggle .btn.on{background:var(--ink);color:var(--paper)}
+.sc{font:400 88px/1 var(--serif);letter-spacing:-.04em}.sc small{font:12px var(--mono);letter-spacing:.05em;margin-left:10px;color:var(--mute);text-transform:uppercase}
+/* start */
+.dark{background:var(--ink);color:var(--paper);border-top:0}
+.dark .sec>.mono{color:#b9b5a6}.dark .sub{color:#c9c5b6}.dark a{color:var(--paper)}
+.tabs{display:flex;margin-top:48px;border-bottom:1px solid #f1eee633}.tabs button{background:none;border:0;color:#b9b5a6;font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:12px 20px 12px 0;cursor:pointer}.tabs button.on{color:var(--paper);box-shadow:0 2px 0 var(--red)}
+.code{position:relative;padding:28px 0}.code pre{color:#e7e3d6;overflow:auto}.code pre span{color:#7d796b}
+.cp{position:absolute;right:0;top:18px;border-color:#f1eee655;color:var(--paper)}
+footer{padding:40px 0;font-size:13px;color:var(--mute)}footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .8s,transform .8s}.rv.in{opacity:1;transform:none}
+@media(max-width:900px){.hero,.sec,.diff{grid-template-columns:1fr}.sec{gap:14px}.diff>div+div{border-left:0;border-top:1px solid var(--ink)}.mast nav{display:none}.cmp .row{grid-template-columns:1fr}.cmp .row>div+div{border-left:0}.wrap{padding:0 20px}section{padding:64px 0}.hero{padding:48px 0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.rv,.ledger .r.hid{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<main>
+<div class="wrap"><div class="mast"><a class="brand" href="#top">FortiGate<i>/</i>CIS</a>
+<nav class="mono"><a href="#report">Report</a><a href="#controls">Controls</a><a href="#safety">Safety</a><a href="#fix">Fix &amp; undo</a><a href="#start">Start</a></nav>
+<a class="mono gh" href="https://github.com/ERROR-SIDDH/fortigate_cis_checker">Source ↗</a></div>
 
-<h1>FortiGate CIS Compliance Checker</h1>
-<p class="lede">A small Python tool that connects to a FortiGate firewall, reads its configuration and compares it with hardening controls taken from the CIS FortiGate 7.x Benchmark. It does not change anything on the firewall.</p>
+<header class="hero" id="top">
+<div><div class="kicker mono"><span>Audit tool</span><span>FortiOS 7.x</span><span>Read-only scanner</span></div>
+<h1>How <em>hardened</em> is your firewall?</h1>
+<p class="lede">A scanner that checks a FortiGate against 19 CIS-style hardening controls, shows what failed and why, and prints the exact commands that fix it. Fixing is optional, separate, and undoable.</p>
+<div class="cta"><a class="btn solid" href="#start">Run a scan</a><a class="btn" href="sample-report.html">Sample report</a></div></div>
+<aside class="big"><span class="mono">Result · factory FortiGate VM · 11 controls</span>
+<div class="num"><span id="bn">0</span><sup>%</sup></div>
+<p>Out of the box, a FortiGate passed 6 of 11 controls. USB auto-install, no remote logging, HTTP and Telnet open: mostly defaults.</p>
+<div class="bar" id="bar"></div></aside>
+</header></div>
 
-<ul class="links">
-  <li><a href="https://github.com/ERROR-SIDDH/fortigate_cis_checker">Source on GitHub</a></li>
-  <li><a href="sample-report.html">Sample HTML report</a></li>
-  <li><a href="https://github.com/ERROR-SIDDH/fortigate_cis_checker/blob/main/docs/setup_readonly_user.md">Device setup guide</a></li>
-</ul>
+<section id="report"><div class="wrap"><div class="sec">
+<div class="mono"><b>01</b> — Report</div>
+<div><h2>The real output from the lab run.</h2>
+<p class="sub">Click any line to see what was expected, what was found, and the fix. These are the results recorded in the project README, not mock data.</p>
+<div class="ledger" id="ledger"><div class="scanline" id="sl"></div></div></div></div></div></section>
 
-<p class="note">This is a coursework project. It is not an official CIS-CAT tool and does not contain any CIS benchmark text.</p>
+<section id="controls"><div class="wrap"><div class="sec">
+<div class="mono"><b>02</b> — Controls</div>
+<div><h2>Nineteen checks across access, services and logging.</h2>
+<p class="sub">Level 1 is baseline hardening; Level 2 is stricter. Thirteen of the checks can be corrected automatically.</p>
+<div class="filters" id="flt"></div>
+<table><thead><tr><th>ID</th><th>Level</th><th>Control</th><th style="text-align:right">Remediation</th></tr></thead><tbody id="tb"></tbody></table></div></div></div></section>
 
-<h2>Why</h2>
-<p>A FortiGate in its factory configuration works, but it does not meet the CIS baseline. HTTP management is enabled, USB auto-install is on, no login banner is shown and logs stay on the box. Checking all of this by hand is slow and easy to get wrong. This tool checks it in under a second and lists the exact CLI commands that fix each finding.</p>
+<section id="safety"><div class="wrap"><div class="sec">
+<div class="mono"><b>03</b> — Safety</div>
+<div><h2>Scanning can’t change anything. Fixing needs a different key.</h2>
+<p class="sub">Two credentials, two code paths, two FortiGate profiles. The scanner never holds write access.</p>
+<div class="cmp rv"><div class="row"><div></div><div>Scanner</div><div>Fix console</div></div>
+<div class="row"><div>Token</div><div><code>FGT_API_TOKEN</code></div><div><code>FGT_WRITE_TOKEN</code></div></div>
+<div class="row"><div>FortiGate profile</div><div>every group <code>read</code></div><div><code>sysgrp read-write</code>, others read</div></div>
+<div class="row"><div>HTTP methods sent</div><div class="y">GET only</div><div>GET, PUT</div></div>
+<div class="row"><div>SSH commands</div><div class="y">get · show · diagnose sys</div><div class="n">not supported</div></div>
+<div class="row"><div>If the code were modified</div><div class="y">device returns 403</div><div>you opted in</div></div></div></div></div></div></section>
 
-<h2>How it works</h2>
-<ol>
-  <li>The tool logs in to the FortiOS REST API with a token that belongs to a read-only API user. SSH is also supported.</li>
-  <li>It downloads the configuration tables it needs, such as <code>system/global</code>, <code>system/interface</code>, <code>system/password-policy</code> and <code>log.syslogd/setting</code>.</li>
-  <li>It runs each rule against that data. Each result is PASS, FAIL, WARN or ERROR, and records the expected value, the actual value and a fix.</li>
-  <li>It writes the results to the console, a CSV file and a standalone HTML report.</li>
-</ol>
+<section id="fix"><div class="wrap"><div class="sec">
+<div class="mono"><b>04</b> — Fix &amp; undo</div>
+<div><h2>The old value is saved before the new one is written.</h2>
+<p class="sub">An optional local console applies the setting behind a failed check. Undo restores the saved value exactly. Toggle it below (simulation).</p>
+<div class="diff rv"><div><span class="mono">config system global</span><pre id="df"></pre>
+<div class="toggle"><button class="btn solid on" id="ap">Apply fix</button><button class="btn" id="un">Undo</button></div></div>
+<div><span class="mono">Checks passing in this example</span><div class="sc"><span id="dn">1</span><small>of 3</small></div>
+<p class="sub" style="font-size:14px">Saved to <code style="font:13px var(--mono)">undo_state.json</code> before the first write, and removed after undo.</p></div></div></div></div></div></section>
 
-<h3>Read-only by design</h3>
-<p>There are two separate safeguards against writes, and either one is enough on its own:</p>
-<ul>
-  <li><strong>In the client.</strong> The REST client only sends <code>GET</code> requests. The SSH client refuses any command that is not <code>get</code>, <code>show</code> or <code>diagnose sys</code>.</li>
-  <li><strong>On the device.</strong> The API user uses an access profile with every permission group set to <code>read</code>, and its trusthost only allows the scanner's IP. The FortiGate rejects writes even if the script is modified.</li>
-</ul>
+<section class="dark" id="start"><div class="wrap"><div class="sec">
+<div class="mono"><b>05</b> — Start</div>
+<div><h2>From clone to report in a few commands.</h2>
+<p class="sub">Create the read-only API user first: <a href="https://github.com/ERROR-SIDDH/fortigate_cis_checker/blob/main/docs/setup_readonly_user.md">setup guide ↗</a>. Use <code>--insecure</code> only in a lab with the factory self-signed certificate.</p>
+<div class="tabs" id="tabs"><button class="on" data-t="scan">Scan</button><button data-t="console">Fix console</button></div>
+<div class="code"><button class="btn cp" id="cp">Copy</button><pre id="cd"></pre></div></div></div></div></section>
 
-<h2>Controls checked</h2>
-<div class="table-wrap">
-<table>
-  <thead><tr><th>ID</th><th>Level</th><th>Control</th></tr></thead>
-  <tbody>
-    <tr><td>1.1</td><td>1</td><td>Admin password minimum length is at least 14</td></tr>
-    <tr><td>1.2</td><td>1</td><td>Admin lockout threshold and duration are set</td></tr>
-    <tr><td>1.3</td><td>1</td><td>Admin idle timeout is 5 minutes or less</td></tr>
-    <tr><td>1.4</td><td>1</td><td>No interface allows HTTP or Telnet for management</td></tr>
-    <tr><td>1.5</td><td>2</td><td>Pre-login banner is enabled</td></tr>
-    <tr><td>1.6</td><td>2</td><td>USB auto-install of config and firmware is disabled</td></tr>
-    <tr><td>1.7</td><td>2</td><td>Password complexity rules are enforced</td></tr>
-    <tr><td>1.8</td><td>1</td><td>Default <code>admin</code> account is removed or trusthost-limited</td></tr>
-    <tr><td>2.1</td><td>1</td><td>SNMP is disabled or v3-only</td></tr>
-    <tr><td>2.2</td><td>1</td><td>NTP synchronisation is enabled</td></tr>
-    <tr><td>3.1</td><td>1</td><td>Logs are sent to a remote syslog or FortiAnalyzer</td></tr>
-  </tbody>
-</table>
-</div>
+<footer><div class="wrap"><span>Built for a security coursework project. Not an official CIS-CAT tool; contains no CIS benchmark text.</span><a href="https://github.com/ERROR-SIDDH/fortigate_cis_checker">github.com/ERROR-SIDDH/fortigate_cis_checker</a></div></footer>
 
-<h2>Install</h2>
-<pre><code>git clone https://github.com/ERROR-SIDDH/fortigate_cis_checker.git
-cd fortigate_cis_checker
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt</code></pre>
-
-<h2>Prepare the FortiGate</h2>
-<p>Do this once, as a full admin, from the FortiGate CLI. Replace <code>&lt;scanner-ip&gt;</code> with the IP address of the machine that will run the checker.</p>
-<pre><code>config system accprofile
-    edit "cis_readonly"
-        set sysgrp read
-        set netgrp read
-        set loggrp read
-        set fwgrp read
-        set authgrp read
-        set secfabgrp read
-        set ftviewgrp read
-        set vpngrp read
-        set utmgrp read
-        set wanoptgrp read
-        set wifi read
-    next
-end
-
-config system api-user
-    edit "cis_checker_api"
-        set accprofile "cis_readonly"
-        set vdom "root"
-        config trusthost
-            edit 1
-                set ipv4-trusthost &lt;scanner-ip&gt; 255.255.255.255
-            next
-        end
-    next
-end
-
-execute api-user generate-key cis_checker_api</code></pre>
-<p>Run the last command from the top-level <code>#</code> prompt. If you run it from inside a <code>config</code> block, FortiOS replies <code>Unknown action 0</code>. FortiOS shows the token only once, so copy it straight away.</p>
-
-<h2>Run</h2>
-<pre><code>export FGT_API_TOKEN="&lt;token&gt;"
-python3 main.py --backend api --host 172.20.80.130 --insecure \
-    --csv reports/report.csv --html reports/report.html</code></pre>
-<p><code>--insecure</code> turns off TLS verification for the factory self-signed certificate. Use it only in a lab. The exit code is 0 when every check passes, 1 when any check fails and 2 when the tool cannot connect.</p>
-
-<h2>Results from the lab FortiGate</h2>
-<p>A FortiGate VM on a lab network, running the factory configuration plus some password-policy changes.</p>
-<p class="score"><strong>6 pass, 5 fail, compliance score 54.5%</strong></p>
-<div class="table-wrap">
-<table>
-  <thead><tr><th>ID</th><th>Result</th><th>What was found</th></tr></thead>
-  <tbody>
-    <tr><td>1.1</td><td class="fail">FAIL</td><td>Minimum password length is 12, required 14</td></tr>
-    <tr><td>1.2</td><td class="pass">PASS</td><td>Lockout after 3 attempts for 60 s</td></tr>
-    <tr><td>1.3</td><td class="pass">PASS</td><td>Idle timeout is 5 minutes</td></tr>
-    <tr><td>1.4</td><td class="fail">FAIL</td><td><code>port1</code> allows HTTP and/or Telnet</td></tr>
-    <tr><td>1.5</td><td class="fail">FAIL</td><td>Pre-login banner disabled</td></tr>
-    <tr><td>1.6</td><td class="fail">FAIL</td><td>USB auto-install of config and image enabled</td></tr>
-    <tr><td>1.7</td><td class="pass">PASS</td><td>Upper, lower, digit and symbol all required</td></tr>
-    <tr><td>1.8</td><td class="pass">PASS</td><td>No account named <code>admin</code></td></tr>
-    <tr><td>2.1</td><td class="pass">PASS</td><td>SNMP disabled, no v1/v2c communities</td></tr>
-    <tr><td>2.2</td><td class="pass">PASS</td><td>NTP sync enabled</td></tr>
-    <tr><td>3.1</td><td class="fail">FAIL</td><td>Remote syslog disabled, no server set</td></tr>
-  </tbody>
-</table>
-</div>
-<p>The <a href="sample-report.html">full HTML report</a> includes the remediation commands for every row.</p>
-
-<h3>Fixing the failures</h3>
-<pre><code>config system password-policy
-    set minimum-length 14
-end
-config system interface
-    edit "port1"
-        set allowaccess https ssh ping
-    next
-end
-config system global
-    set pre-login-banner enable
-end
-config system auto-install
-    set auto-install-config disable
-    set auto-install-image disable
-end
-config log syslogd setting
-    set status enable
-    set server &lt;syslog-server-ip&gt;
-end</code></pre>
-<p>Run the checker again afterwards to confirm that the score has gone up.</p>
-
-<h2>Limitations</h2>
-<ul>
-  <li>The tool covers 11 controls, not the full benchmark. Adding a control means writing one function in <code>rules.py</code>.</li>
-  <li>The rule IDs are this project's own. To match them with an official CIS PDF, look up each control in the specific benchmark version you are citing.</li>
-  <li>It has been tested against a single FortiGate VM. Table names in the REST API can differ between FortiOS versions.</li>
-</ul>
-
-<footer>
-  FortiGate CIS Compliance Checker &middot; coursework project &middot;
-  <a href="https://github.com/ERROR-SIDDH/fortigate_cis_checker">GitHub</a>
-</footer>
-
-</main>
+<script>
+const $=s=>document.querySelector(s),RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const RUN=[["1.1","FAIL","Admin password minimum length enforced","minimum-length=12","config system password-policy\n  set minimum-length 14"],
+["1.2","PASS","Admin lockout threshold and duration","threshold=3, duration=60s"],["1.3","PASS","Administrative idle timeout ≤ 5 minutes","admintimeout=5"],
+["1.4","FAIL","No HTTP or Telnet for admin access","port1 allows http/telnet","config system interface\n  edit port1\n  set allowaccess https ssh"],
+["1.5","FAIL","Pre-login banner configured","pre-login-banner=disable","config system global\n  set pre-login-banner enable"],
+["1.6","FAIL","USB auto-install disabled","auto-install-config=enable, auto-install-image=enable","config system auto-install\n  set auto-install-config disable\n  set auto-install-image disable"],
+["1.7","PASS","Password complexity enforced","all minimums ≥ 1"],["1.8","PASS","Default admin account removed or restricted","no account named admin"],
+["2.1","PASS","SNMP disabled or v3-only","snmp disabled, 0 v1/v2c communities"],["2.2","PASS","NTP synchronisation enabled","ntpsync=enable"],
+["3.1","FAIL","Logs sent to a remote target","status=disable, server=unset","config log syslogd setting\n  set status enable\n  set server <ip>"]];
+/* ledger */
+(()=>{const L=$('#ledger');
+L.insertAdjacentHTML('beforeend','<div class="r head"><span>ID</span><span>Lvl</span><span>Control</span><span>Result</span></div>');
+RUN.forEach(r=>{const d=document.createElement('div');d.className='r hid';
+d.innerHTML=`<span style="color:var(--red)">${r[0]}</span><span style="color:var(--mute)">${r[0].startsWith('1.5')||r[0]==='1.6'||r[0]==='1.7'?'L2':'L1'}</span><span class="t">${r[2]}</span><span class="stamp ${r[1]}">${r[1]}</span><div class="d">found    ${r[3]}${r[4]?'\nfix\n'+r[4].replace(/^/gm,'  '):''}</div>`;
+d.onclick=()=>d.classList.toggle('open');L.append(d)});
+L.insertAdjacentHTML('beforeend','<div class="end"><span>6 pass · 5 fail · 0 error</span><span>score 54.5%</span></div>');
+const rows=[...L.querySelectorAll('.r.hid')],sl=$('#sl');let ran=false;
+new IntersectionObserver((e,o)=>{if(!e[0].isIntersecting||ran)return;ran=true;o.disconnect();
+rows.forEach((r,i)=>setTimeout(()=>r.classList.remove('hid'),RM?0:i*130));
+if(!RM){const top=rows[0].offsetTop,h=rows.at(-1).offsetTop+rows.at(-1).offsetHeight-top;sl.style.top=top+'px';sl.style.opacity=1;
+sl.animate([{transform:'translateY(0)'},{transform:`translateY(${h}px)`}],{duration:rows.length*130,easing:'linear'}).onfinish=()=>sl.style.opacity=0}},{threshold:.25}).observe(L)})();
+/* hero number + bar */
+(()=>{const bar=$('#bar');RUN.forEach(r=>{const i=document.createElement('i');bar.append(i);setTimeout(()=>i.className=r[1]==='PASS'?'p':'f',RM?0:500+RUN.indexOf(r)*90)});
+const to=54.5,t0=performance.now();(function f(t){const p=Math.min((t-t0)/1500,1);$('#bn').textContent=(to*(1-Math.pow(1-p,3))).toFixed(1);if(p<1&&!RM)requestAnimationFrame(f);else $('#bn').textContent=to.toFixed(1)})(t0)})();
+/* controls */
+const C=[["1.1",1,"Admin password minimum length",1],["1.2",1,"Admin lockout threshold and duration",1],["1.3",1,"Administrative idle timeout",1],["1.4",1,"No HTTP or Telnet for admin access",0],["1.5",2,"Pre-login banner configured",1],["1.6",2,"USB auto-install disabled",1],["1.7",2,"Password complexity enforced",0],["1.8",1,"Default admin account removed or restricted",0],
+["1.9",1,"Strong cryptography enforced",1],["1.10",1,"HTTP admin redirected to HTTPS",1],["1.11",1,"Admin HTTPS refuses TLS 1.0 and 1.1",1],["1.12",1,"Maintainer recovery account disabled",1],["1.13",1,"Static-key TLS ciphers disabled",1],["1.14",2,"Config revision saved on logout",1],["1.15",2,"SCP config download disabled",1],
+["2.1",1,"SNMP disabled or v3-only",0],["2.2",1,"NTP synchronisation enabled",1],["3.1",1,"Logs sent to remote syslog or FortiAnalyzer",0],["3.2",1,"Every accept policy logs traffic",0]];
+let F='all';const fl=$('#flt');[['all','All 19'],['1','Level 1'],['2','Level 2'],['fx','Auto-fix']].forEach(([k,l])=>{const b=document.createElement('button');b.className='fb'+(k==='all'?' on':'');b.textContent=l;b.onclick=()=>{F=k;fl.querySelectorAll('.fb').forEach(x=>x.classList.toggle('on',x===b));draw()};fl.append(b)});
+function draw(){$('#tb').innerHTML=C.filter(c=>F==='all'||(F==='fx'?c[3]:String(c[1])===F)).map(c=>`<tr><td class="id">${c[0]}</td><td class="lv">L${c[1]}</td><td>${c[2]}</td><td class="fx" style="color:${c[3]?'var(--green)':'var(--mute)'}">${c[3]?'one-click':'manual'}</td></tr>`).join('')}draw();
+/* diff */
+(()=>{const L=[["strong-crypto","disable","enable"],["admin-maintainer","enable","disable"],["admin-scp","enable","disable"]];
+const set=a=>{$('#df').innerHTML=L.map(l=>a?`<span class="del">- set ${l[0]} ${l[1]}</span>\n<span class="add">+ set ${l[0]} ${l[2]}</span>`:`  set ${l[0]} ${l[1]}`).join('\n');
+$('#dn').textContent=a?3:0;$('#ap').classList.toggle('on',!a);$('#un').classList.toggle('on',a);$('#ap').classList.toggle('solid',!a);$('#un').classList.toggle('solid',a)};
+$('#ap').onclick=()=>set(true);$('#un').onclick=()=>set(false);set(false)})();
+/* start */
+const CODE={scan:`git clone https://github.com/ERROR-SIDDH/fortigate_cis_checker.git
+cd fortigate_cis_checker && python3 -m venv venv && . venv/bin/activate
+pip install -r requirements.txt
+export FGT_API_TOKEN="<read-only token>"
+python3 main.py --backend api --host <firewall-ip> --insecure --html reports/report.html`,
+console:`export FGT_API_TOKEN="<read-only token>"
+export FGT_WRITE_TOKEN="<read-write token>"
+python3 webui.py --host <firewall-ip> --insecure
+# then open http://127.0.0.1:8080`};
+let tab='scan';const show=()=>$('#cd').textContent=CODE[tab];show();
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;$('#tabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));show()};
+$('#cp').onclick=async e=>{try{await navigator.clipboard.writeText(CODE[tab]);e.target.textContent='Copied'}catch{e.target.textContent='Select + copy'}setTimeout(()=>e.target.textContent='Copy',1500)};
+/* reveal */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+</script>
 </body>
 </html>
