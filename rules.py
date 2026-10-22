@@ -467,6 +467,34 @@ def rule_policy_logging(ctx: RuleContext) -> RuleResult:
         return RuleResult(rid, title, Status.ERROR, level, expected, str(exc), remediation)
 
 
+def rule_admin_maintainer(ctx: RuleContext) -> RuleResult:
+    return _global_check(
+        ctx, "1.12", "Console 'maintainer' recovery account disabled", 1, "admin-maintainer",
+        "disable", lambda v: v == "disable",
+        "config system global\n  set admin-maintainer disable\nend")
+
+
+def rule_static_key_ciphers(ctx: RuleContext) -> RuleResult:
+    return _global_check(
+        ctx, "1.13", "Static-key TLS ciphers disabled", 1, "ssl-static-key-ciphers",
+        "disable", lambda v: v == "disable",
+        "config system global\n  set ssl-static-key-ciphers disable\nend")
+
+
+def rule_config_backup_on_logout(ctx: RuleContext) -> RuleResult:
+    return _global_check(
+        ctx, "1.14", "Configuration revision saved on admin logout", 2, "revision-backup-on-logout",
+        "enable", lambda v: v == "enable",
+        "config system global\n  set revision-backup-on-logout enable\nend")
+
+
+def rule_admin_scp(ctx: RuleContext) -> RuleResult:
+    return _global_check(
+        ctx, "1.15", "SCP-based config download by admins disabled", 2, "admin-scp",
+        "disable", lambda v: v == "disable",
+        "config system global\n  set admin-scp disable\nend")
+
+
 ALL_RULES: List[Rule] = [
     rule_password_min_length,
     rule_password_policy_complexity,
@@ -483,4 +511,8 @@ ALL_RULES: List[Rule] = [
     rule_https_redirect,
     rule_admin_tls_versions,
     rule_policy_logging,
+    rule_admin_maintainer,
+    rule_static_key_ciphers,
+    rule_config_backup_on_logout,
+    rule_admin_scp,
 ]

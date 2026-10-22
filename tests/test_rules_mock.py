@@ -36,7 +36,8 @@ HARDENED_CMDB = {
     "/system/global": {"results": [{
         "admin-lockout-threshold": 3, "admin-lockout-duration": 120,
         "admintimeout": 5, "pre-login-banner": "enable",
-        "strong-crypto": "enable", "admin-https-redirect": "enable",
+        "strong-crypto": "enable", "admin-maintainer": "disable",
+        "ssl-static-key-ciphers": "disable", "revision-backup-on-logout": "enable", "admin-scp": "disable", "admin-https-redirect": "enable",
         "admin-https-ssl-versions": "tlsv1-2 tlsv1-3",
     }]},
     "/system/interface": {"results": [
@@ -64,7 +65,8 @@ WEAK_CMDB = {
     "/system/global": {"results": [{
         "admin-lockout-threshold": 0, "admin-lockout-duration": 0,
         "admintimeout": 60, "pre-login-banner": "disable",
-        "strong-crypto": "disable", "admin-https-redirect": "disable",
+        "strong-crypto": "disable", "admin-maintainer": "enable",
+        "ssl-static-key-ciphers": "enable", "revision-backup-on-logout": "disable", "admin-scp": "enable", "admin-https-redirect": "disable",
         "admin-https-ssl-versions": "tlsv1-0 tlsv1-1 tlsv1-2",
     }]},
     "/system/interface": {"results": [

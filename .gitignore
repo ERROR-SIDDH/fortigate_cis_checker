@@ -6,3 +6,4 @@ __pycache__/
 # unrelated data files that were in this folder
 out.csv
 out.txt
+undo_state.json
