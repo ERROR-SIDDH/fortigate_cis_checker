@@ -27,7 +27,11 @@ was written independently.
 | 1.8 | 1     | Default `admin` account is removed or trusthost-limited  |
 | 2.1 | 1     | SNMP is disabled or v3-only (no v1/v2c communities)      |
 | 2.2 | 1     | NTP synchronisation is enabled                           |
+| 1.9 | 1     | `strong-crypto` is enabled                               |
+| 1.10| 1     | HTTP admin requests are redirected to HTTPS              |
+| 1.11| 1     | Admin HTTPS refuses TLS 1.0 and 1.1                      |
 | 3.1 | 1     | Logs are sent to a remote syslog / FortiAnalyzer         |
+| 3.2 | 1     | Every accept firewall policy logs traffic                |
 
 Level 1 checks are baseline hardening. Level 2 checks are stricter.
 

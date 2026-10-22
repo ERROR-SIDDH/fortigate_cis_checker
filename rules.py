@@ -412,6 +412,61 @@ def rule_default_admin_renamed_or_disabled(ctx: RuleContext) -> RuleResult:
         return RuleResult(rid, title, Status.ERROR, level, "'admin' absent or trusthost-restricted", str(exc), remediation)
 
 
+def _global_check(ctx, rid, title, level, key, expected, ok, remediation) -> RuleResult:
+    """Shared body for rules that test a single `config system global` value."""
+    try:
+        if ctx.backend == "api":
+            val = str(_first_result(ctx.cmdb("/system/global")).get(key, "")).lower()
+        else:
+            val = (_cli_kv(ctx.cli("get system global"), key) or "").lower()
+        actual = f"{key}={val or 'unset'}"
+        return RuleResult(rid, title, Status.PASS if ok(val) else Status.FAIL, level, expected, actual, remediation)
+    except Exception as exc:
+        return RuleResult(rid, title, Status.ERROR, level, expected, str(exc), remediation)
+
+
+def rule_strong_crypto(ctx: RuleContext) -> RuleResult:
+    return _global_check(
+        ctx, "1.9", "Strong cryptography enforced (strong-crypto)", 1, "strong-crypto",
+        "enable", lambda v: v == "enable",
+        "config system global\n  set strong-crypto enable\nend")
+
+
+def rule_https_redirect(ctx: RuleContext) -> RuleResult:
+    return _global_check(
+        ctx, "1.10", "HTTP admin requests redirected to HTTPS", 1, "admin-https-redirect",
+        "enable", lambda v: v == "enable",
+        "config system global\n  set admin-https-redirect enable\nend")
+
+
+def rule_admin_tls_versions(ctx: RuleContext) -> RuleResult:
+    return _global_check(
+        ctx, "1.11", "Admin HTTPS refuses TLS 1.0 / 1.1", 1, "admin-https-ssl-versions",
+        "no tlsv1-0 / tlsv1-1", lambda v: bool(v) and "tlsv1-0" not in v.split() and "tlsv1-1" not in v.split(),
+        "config system global\n  set admin-https-ssl-versions tlsv1-2 tlsv1-3\nend")
+
+
+def rule_policy_logging(ctx: RuleContext) -> RuleResult:
+    rid, title, level = "3.2", "Every accept firewall policy logs traffic", 1
+    expected = "logtraffic is all/utm on every accept policy"
+    remediation = "config firewall policy\n  edit <id>\n    set logtraffic all\n  next\nend"
+    try:
+        if ctx.backend == "api":
+            pols = [(str(p.get("policyid")), p.get("action", "accept"), p.get("logtraffic", ""))
+                    for p in ctx.cmdb("/firewall/policy").get("results", [])]
+        else:
+            text = ctx.cli("show firewall policy")
+            # `show` omits defaults: action defaults to deny, logtraffic to utm
+            pols = [(m.group(1), _cli_kv(m.group(2), "set action") or "deny",
+                     _cli_kv(m.group(2), "set logtraffic") or "utm")
+                    for m in re.finditer(r"edit (\d+)(.*?)\n\s*next", text, re.DOTALL)]
+        bad = [i for i, action, log in pols if action == "accept" and log.lower() not in ("all", "utm")]
+        actual = f"policies not logging: {bad}" if bad else f"{len(pols)} policies checked"
+        return RuleResult(rid, title, Status.FAIL if bad else Status.PASS, level, expected, actual, remediation)
+    except Exception as exc:
+        return RuleResult(rid, title, Status.ERROR, level, expected, str(exc), remediation)
+
+
 ALL_RULES: List[Rule] = [
     rule_password_min_length,
     rule_password_policy_complexity,
@@ -424,4 +479,8 @@ ALL_RULES: List[Rule] = [
     rule_snmp_v3_only,
     rule_ntp_configured,
     rule_logging_enabled,
+    rule_strong_crypto,
+    rule_https_redirect,
+    rule_admin_tls_versions,
+    rule_policy_logging,
 ]

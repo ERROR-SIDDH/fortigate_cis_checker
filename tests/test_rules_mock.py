@@ -36,6 +36,8 @@ HARDENED_CMDB = {
     "/system/global": {"results": [{
         "admin-lockout-threshold": 3, "admin-lockout-duration": 120,
         "admintimeout": 5, "pre-login-banner": "enable",
+        "strong-crypto": "enable", "admin-https-redirect": "enable",
+        "admin-https-ssl-versions": "tlsv1-2 tlsv1-3",
     }]},
     "/system/interface": {"results": [
         {"name": "port1", "allowaccess": "https ssh"},
@@ -45,6 +47,7 @@ HARDENED_CMDB = {
     "/system.snmp/community": {"results": []},
     "/system/ntp": {"results": [{"ntpsync": "enable"}]},
     "/log.syslogd/setting": {"results": [{"status": "enable", "server": "10.0.0.50"}]},
+    "/firewall/policy": {"results": [{"policyid": 1, "action": "accept", "logtraffic": "all"}]},
     "/system/auto-install": {"results": [{"auto-install-config": "disable", "auto-install-image": "disable"}]},
     "/system/admin": {"results": [
         {"name": "admin", "trusthost1": "10.0.0.0 255.255.255.0"},
@@ -61,6 +64,8 @@ WEAK_CMDB = {
     "/system/global": {"results": [{
         "admin-lockout-threshold": 0, "admin-lockout-duration": 0,
         "admintimeout": 60, "pre-login-banner": "disable",
+        "strong-crypto": "disable", "admin-https-redirect": "disable",
+        "admin-https-ssl-versions": "tlsv1-0 tlsv1-1 tlsv1-2",
     }]},
     "/system/interface": {"results": [
         {"name": "port1", "allowaccess": "https http ssh telnet"},
@@ -70,6 +75,7 @@ WEAK_CMDB = {
     "/system.snmp/community": {"results": [{"name": "public"}, {"name": "private"}]},
     "/system/ntp": {"results": [{"ntpsync": "disable"}]},
     "/log.syslogd/setting": {"results": [{"status": "disable", "server": ""}]},
+    "/firewall/policy": {"results": [{"policyid": 1, "action": "accept", "logtraffic": "disable"}]},
     "/system/auto-install": {"results": [{"auto-install-config": "enable", "auto-install-image": "enable"}]},
     "/system/admin": {"results": [
         {"name": "admin", "trusthost1": "0.0.0.0 0.0.0.0"},
