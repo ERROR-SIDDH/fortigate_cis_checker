@@ -47,6 +47,12 @@ writes.
    every permission group is set to `read`. The FortiGate itself refuses
    any write, even if the script were modified.
 
+## Documentation
+
+Full guides are in [`docs/`](docs/README.md): how a scan works, a
+reference for every check (why it matters, how it is tested, how to
+fix it), the Apply/Undo console, and troubleshooting.
+
 ## Layout
 
 ```

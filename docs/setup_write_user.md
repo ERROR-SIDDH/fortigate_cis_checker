@@ -39,5 +39,7 @@ export FGT_WRITE_TOKEN=<token above>
 python3 webui.py --host <firewall-ip> --insecure
 ```
 
+Back to the [fix console guide](fix-console.md).
+
 Cleanup: `config system api-user` → `delete cis_fixer_api`, and
 `config system accprofile` → `delete cis_fixer`.

@@ -41,7 +41,7 @@ config system api-user
         set vdom "root"
         config trusthost
             edit 1
-                set ipv4-trusthost <your-scanning-host-ip>/32
+                set ipv4-trusthost <your-scanning-host-ip> 255.255.255.255
             next
         end
     next
