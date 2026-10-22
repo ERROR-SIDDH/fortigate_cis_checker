@@ -67,6 +67,22 @@ pre{font:13.5px/1.9 var(--mono);white-space:pre-wrap}.add{color:var(--green)}.de
 .diff .mono{color:var(--mute);display:block;margin-bottom:14px}
 .toggle{display:flex;gap:0;margin-top:24px}.toggle .btn+.btn{margin-left:-1px}.toggle .btn.on{background:var(--ink);color:var(--paper)}
 .sc{font:400 88px/1 var(--serif);letter-spacing:-.04em}.sc small{font:12px var(--mono);letter-spacing:.05em;margin-left:10px;color:var(--mute);text-transform:uppercase}
+/* docs */
+.dt{margin-top:18px}.dt td{padding:12px 20px 12px 0;font-size:15px;vertical-align:top}.dt td:first-child{font:500 13px var(--mono);white-space:nowrap}
+h3{font:400 30px/1.1 var(--serif);letter-spacing:-.02em;margin:56px 0 4px}
+.steps{counter-reset:s;list-style:none;padding:0;margin-top:40px;border-top:1px solid var(--ink)}
+.steps li{counter-increment:s;display:grid;grid-template-columns:56px 1fr;gap:16px;padding:20px 0;border-bottom:1px solid var(--rule)}
+.steps li:before{content:"0" counter(s);font:500 13px var(--mono);color:var(--red)}.steps b{display:block;font-weight:600}.steps span{color:#3b392f}
+.two2{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.gl{display:grid;grid-template-columns:1fr 1fr;gap:0 40px;margin-top:18px;border-top:1px solid var(--ink)}.gl div{padding:12px 0;border-bottom:1px solid var(--rule);font-size:15px}.gl b{font:500 12px var(--mono);letter-spacing:.04em;text-transform:uppercase;display:block;color:var(--red)}
+.det td{padding:0!important;border-bottom:1px solid var(--rule)}.det dl{display:grid;grid-template-columns:90px 1fr;gap:8px 16px;padding:6px 0 20px;font-size:15px}.det dt{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding-top:3px}.det dd{margin:0}
+tr.ctl{cursor:pointer}tr.ctl td.id:before{content:"+ ";color:var(--mute)}tr.ctl.open td.id:before{content:"− "}
+.det{display:none}.det.open{display:table-row}
+code{font:13px var(--mono);background:var(--paper2);padding:1px 6px}
+.note{border-left:3px solid var(--red);padding:4px 0 4px 16px;margin-top:28px;color:#3b392f;max-width:44em}
+.tcode{margin-top:18px;background:var(--ink);color:#e7e3d6;padding:20px 24px}.tcode pre{font-size:13px;overflow:auto}
+.bad{color:var(--red)}
+@media(max-width:900px){.two2,.gl{grid-template-columns:1fr}.det dl{grid-template-columns:1fr;gap:2px}}
 /* start */
 .dark{background:var(--ink);color:var(--paper);border-top:0}
 .dark .sec>.mono{color:#b9b5a6}.dark .sub{color:#c9c5b6}.dark a{color:var(--paper)}
@@ -81,8 +97,8 @@ footer{padding:40px 0;font-size:13px;color:var(--mute)}footer .wrap{display:flex
 </head>
 <body>
 <div class="wrap"><div class="mast"><a class="brand" href="#top">FortiGate<i>/</i>CIS</a>
-<nav class="mono"><a href="#report">Report</a><a href="#controls">Controls</a><a href="#safety">Safety</a><a href="#fix">Fix &amp; undo</a><a href="#start">Start</a></nav>
-<a class="mono gh" href="https://github.com/ERROR-SIDDH/fortigate_cis_checker/tree/main/docs">Docs ↗</a></div>
+<nav class="mono"><a href="#report">Report</a><a href="#controls">Controls</a><a href="#how">How it works</a><a href="#safety">Safety</a><a href="#fix">Fix &amp; undo</a><a href="#help">Help</a><a href="#start">Start</a></nav>
+<a class="mono gh" href="https://github.com/ERROR-SIDDH/fortigate_cis_checker">Source ↗</a></div>
 
 <header class="hero" id="top">
 <div><div class="kicker mono"><span>Audit tool</span><span>FortiOS 7.x</span><span>Read-only scanner</span></div>
@@ -104,12 +120,64 @@ footer{padding:40px 0;font-size:13px;color:var(--mute)}footer .wrap{display:flex
 <section id="controls"><div class="wrap"><div class="sec">
 <div class="mono"><b>02</b> — Controls</div>
 <div><h2>Nineteen checks across access, services and logging.</h2>
-<p class="sub">Level 1 is baseline hardening; Level 2 is stricter. Thirteen of the checks can be corrected automatically.</p>
+<p class="sub">Level 1 is baseline hardening; Level 2 is stricter. Thirteen of the checks can be corrected automatically. <b>Click a row</b> for why it matters, which setting is read, the exact pass condition, the fix, and cautions.</p>
 <div class="filters" id="flt"></div>
 <table><thead><tr><th>ID</th><th>Level</th><th>Control</th><th style="text-align:right">Remediation</th></tr></thead><tbody id="tb"></tbody></table></div></div></div></section>
 
+<section id="how"><div class="wrap"><div class="sec">
+<div class="mono"><b>03</b> — How it works</div>
+<div><h2>One scan, from command to report.</h2>
+<p class="sub">The scanner connects to the firewall, reads configuration, compares each setting with a control, and writes a report. Nothing on the device is changed.</p>
+<ol class="steps">
+<li><div><b>Connect</b><span>Over the REST API (HTTPS, recommended) or SSH. With the API, one status call is made first so a wrong host or token fails immediately with a clear message.</span></div></li>
+<li><div><b>Read</b><span>Each check asks a shared context for the settings it needs. Every table is fetched once and cached, so ten checks reading <code>system global</code> make one request.</span></div></li>
+<li><div><b>Evaluate</b><span>Each check returns a result: ID, level, status, what was expected, what was found, and the fix commands. A check that crashes becomes an <code>ERROR</code> result; it never stops the run.</span></div></li>
+<li><div><b>Report</b><span>A console summary, plus an optional CSV (one row per check) and a self-contained HTML file with no external resources.</span></div></li></ol>
+
+<h3>Backends</h3>
+<table class="dt"><thead><tr><th></th><th>REST API <small style="color:var(--green)">(recommended)</small></th><th>SSH</th></tr></thead><tbody>
+<tr><td>Credential</td><td>API token</td><td>Username + password or key</td></tr>
+<tr><td>Data</td><td>Structured JSON, stable field names</td><td>CLI text parsed with regular expressions</td></tr>
+<tr><td>Port</td><td>443</td><td>22</td></tr>
+<tr><td>Traffic allowed</td><td>HTTP <code>GET</code> only</td><td><code>get</code>, <code>show</code>, <code>diagnose sys</code>, <code>diagnose debug</code></td></tr>
+<tr><td>Fix console</td><td>Reads and writes (separate tokens)</td><td>Not supported</td></tr></tbody></table>
+
+<div class="two2"><div><h3>Result statuses</h3>
+<table class="dt"><tbody>
+<tr><td style="color:var(--green)">PASS</td><td>The setting meets the control.</td></tr>
+<tr><td class="bad">FAIL</td><td>It does not. Apply the fix.</td></tr>
+<tr><td style="color:var(--amber)">WARN</td><td>Present but weaker than the control, or a policy choice. Only check 1.7 returns it.</td></tr>
+<tr><td style="color:var(--mute)">ERROR</td><td>Could not be evaluated (permission, missing table). An error is <b>not</b> a pass.</td></tr></tbody></table></div>
+<div><h3>Exit codes</h3>
+<table class="dt"><tbody>
+<tr><td>0</td><td>No check failed.</td></tr>
+<tr><td>1</td><td>At least one <code>FAIL</code> (or <code>WARN</code> with <code>--fail-on-warn</code>).</td></tr>
+<tr><td>2</td><td>Could not connect or authenticate.</td></tr></tbody></table>
+<p class="sub" style="font-size:15px">A non-zero exit lets a scheduled job flag configuration drift.</p></div></div>
+
+<p class="note"><b>Compliance score</b> = passing checks ÷ total checks. <code>WARN</code> and <code>ERROR</code> count as not passing. Use <code>--level 1</code> to score only baseline checks.</p>
+
+<h3>Add your own check</h3>
+<ol class="steps">
+<li><div><b>Write the rule</b><span>Add <code>rule_name(ctx)</code> to <code>rules.py</code> returning a result. For one <code>system global</code> value, reuse the <code>_global_check</code> helper as checks 1.9 to 1.15 do. Handle both API and SSH.</span></div></li>
+<li><div><b>Register it</b><span>Append it to <code>ALL_RULES</code>.</span></div></li>
+<li><div><b>Test offline</b><span>Add the setting to the hardened and weak mock configs in <code>tests/test_rules_mock.py</code> and run the mock test.</span></div></li>
+<li><div><b>Optional fix</b><span>Add the setting to <code>FIXES</code> in <code>fixer.py</code> to give it an Apply button. Only single-table settings suit this.</span></div></li></ol>
+
+<h3>Glossary</h3>
+<div class="gl">
+<div><b>FortiGate / FortiOS</b>Fortinet's firewall appliance and its operating system. This tool targets 7.x.</div>
+<div><b>CIS Benchmark</b>A published list of hardening recommendations. These checks are modelled on it but written independently.</div>
+<div><b>Level 1 / Level 2</b>Baseline hardening with little operational cost, versus stricter controls that may affect usability.</div>
+<div><b>API token</b>A secret key identifying an API user, sent as a Bearer header.</div>
+<div><b>Access profile</b>A permission set. Each group (system, network, firewall…) is none, read or read-write.</div>
+<div><b>Trusthost</b>The source IP a user or token may connect from. Requests from elsewhere are refused.</div>
+<div><b>CMDB</b>The FortiGate configuration database, exposed by the API under <code>/api/v2/cmdb</code>.</div>
+<div><b>VDOM</b>A virtual firewall inside one FortiGate. The default is <code>root</code>.</div></div>
+</div></div></div></section>
+
 <section id="safety"><div class="wrap"><div class="sec">
-<div class="mono"><b>03</b> — Safety</div>
+<div class="mono"><b>04</b> — Safety</div>
 <div><h2>Scanning can’t change anything. Fixing needs a different key.</h2>
 <p class="sub">Two credentials, two code paths, two FortiGate profiles. The scanner never holds write access.</p>
 <div class="cmp rv"><div class="row"><div></div><div>Scanner</div><div>Fix console</div></div>
@@ -120,16 +188,66 @@ footer{padding:40px 0;font-size:13px;color:var(--mute)}footer .wrap{display:flex
 <div class="row"><div>If the code were modified</div><div class="y">device returns 403</div><div>you opted in</div></div></div></div></div></div></section>
 
 <section id="fix"><div class="wrap"><div class="sec">
-<div class="mono"><b>04</b> — Fix &amp; undo</div>
+<div class="mono"><b>05</b> — Fix &amp; undo</div>
 <div><h2>The old value is saved before the new one is written.</h2>
 <p class="sub">An optional local console applies the setting behind a failed check. Undo restores the saved value exactly. Toggle it below (simulation).</p>
 <div class="diff rv"><div><span class="mono">config system global</span><pre id="df"></pre>
 <div class="toggle"><button class="btn solid on" id="ap">Apply fix</button><button class="btn" id="un">Undo</button></div></div>
 <div><span class="mono">Checks passing in this example</span><div class="sc"><span id="dn">1</span><small>of 3</small></div>
-<p class="sub" style="font-size:14px">Saved to <code style="font:13px var(--mono)">undo_state.json</code> before the first write, and removed after undo.</p></div></div></div></div></div></section>
+<p class="sub" style="font-size:14px">Saved to <code style="font:13px var(--mono)">undo_state.json</code> before the first write, and removed after undo.</p></div></div><h3>Two tokens, on purpose</h3>
+<table class="dt"><thead><tr><th></th><th>Read token</th><th>Write token</th></tr></thead><tbody>
+<tr><td>Variable</td><td><code>FGT_API_TOKEN</code></td><td><code>FGT_WRITE_TOKEN</code></td></tr>
+<tr><td>FortiGate user</td><td><code>cis_checker_api</code></td><td><code>cis_fixer_api</code></td></tr>
+<tr><td>Profile</td><td>every group read</td><td><code>sysgrp read-write</code>, others read</td></tr>
+<tr><td>Used for</td><td>Scanning</td><td>Apply and Undo only</td></tr></tbody></table>
+
+<h3>How Apply and Undo work</h3>
+<ol class="steps">
+<li><div><b>Read the current value</b><span>Of every setting the fix will change.</span></div></li>
+<li><div><b>Save it</b><span>To <code>undo_state.json</code>, only if no earlier snapshot exists. Applying twice never overwrites the original with an already-fixed value.</span></div></li>
+<li><div><b>Write the compliant value</b><span>A <code>PUT</code> to the matching table.</span></div></li>
+<li><div><b>Undo</b><span>A <code>PUT</code> of the saved values, then the snapshot is deleted.</span></div></li></ol>
+
+<div class="two2"><div><h3>Can fix</h3><p class="sub" style="font-size:15px">1.1, 1.2, 1.3, 1.5, 1.6, 1.9, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15 and 2.2: single-table settings.</p></div>
+<div><h3>Cannot fix</h3><p class="sub" style="font-size:15px">1.4, 1.7, 1.8, 2.1, 3.1, 3.2. They need per-object edits (interfaces, admins, policies), a value only you know (a syslog server), or a policy decision. Use the printed commands.</p></div></div>
+
+<h3>Lockout risks</h3>
+<table class="dt"><tbody>
+<tr><td>1.2 lockout</td><td>Repeated wrong passwords now lock the account for a minute.</td></tr>
+<tr><td>1.3 idle timeout</td><td>Sessions end after five idle minutes.</td></tr>
+<tr><td>1.10 / 1.11</td><td>Old browsers or scripts using HTTP or TLS 1.0/1.1 lose admin access.</td></tr>
+<tr><td>1.12 maintainer</td><td>Removes a password-recovery route. Keep another.</td></tr>
+<tr><td>1.15 SCP</td><td>Backups taken over SCP stop working.</td></tr></tbody></table>
+<p class="note">Test on a lab device first and keep an SSH or console session open so you can reverse a change. The console listens on <code>127.0.0.1</code> only, rejects requests without a custom header (blocking cross-site requests), and refuses any ID not in the fix allow-list. There is no SSH write path, and deleting <code>undo_state.json</code> loses the ability to undo.</p>
+</div></div></div></section>
+
+<section id="help"><div class="wrap"><div class="sec">
+<div class="mono"><b>06</b> — Help</div>
+<div><h2>When something doesn’t work.</h2>
+<p class="sub">The scanner exits with code 2 when it cannot connect or authenticate. Start with the exact message.</p>
+<table class="dt"><thead><tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr></thead><tbody>
+<tr><td>401 Authentication failed</td><td>Wrong or stale token; token not exported in this shell; or the request comes from an IP not in the trusthost</td><td>Test with curl (below). Re-export the token. Make the trusthost the address the FortiGate sees.</td></tr>
+<tr><td>403 Forbidden</td><td>Profile has no read access to that table</td><td>Give the profile <code>read</code> for that group.</td></tr>
+<tr><td>Could not connect</td><td>Wrong host or port, HTTPS admin not on 443, network blocked</td><td>Check <code>--host</code>, <code>--port</code> and that HTTPS admin is allowed from your machine.</td></tr>
+<tr><td>TLS/SSL error</td><td>Self-signed certificate</td><td>Install a trusted certificate, or <code>--insecure</code> in a lab only.</td></tr>
+<tr><td>No API token provided</td><td>Neither <code>--token</code> nor <code>FGT_API_TOKEN</code> set</td><td>Export it in the same shell.</td></tr>
+<tr><td>Check shows ERROR</td><td>The scanner could not read what it needed</td><td>The <i>Actual</i> text holds the cause, often a 403 or missing table.</td></tr>
+<tr><td>Value shows “unset”</td><td>Setting omitted from the API response (some versions omit defaults)</td><td>Confirm with <code>show full-configuration</code> on the device.</td></tr>
+<tr><td>1.7 shows WARN</td><td>By design: complexity is a policy choice</td><td>Tighten if your policy requires it.</td></tr>
+<tr><td>Apply fails (PUT 403)</td><td>Write profile lacks <code>sysgrp read-write</code></td><td>Fix the profile.</td></tr>
+<tr><td>No Undo button</td><td>No snapshot: never applied, or the file was deleted</td><td>Reverse manually with the CLI.</td></tr>
+<tr><td>Lost admin GUI after Apply</td><td>You tightened 1.10 or 1.11</td><td>Use SSH or console: <code>set admin-https-ssl-versions tlsv1-1 tlsv1-2 tlsv1-3</code></td></tr></tbody></table>
+
+<h3>Test a token without running the tool</h3>
+<div class="tcode"><pre>curl -sk -o /dev/null -w "%{http_code}\n" \
+  -H "Authorization: Bearer $FGT_API_TOKEN" \
+  "https://&lt;firewall-ip&gt;/api/v2/monitor/system/status"</pre></div>
+<p class="sub" style="font-size:15px">200 means the token works; 401 means the token or trusthost is wrong. It prints only the status code, never the token.</p>
+<p class="note"><b>Which address does the FortiGate see?</b> The trusthost must be the address the request arrives from, which can differ from your machine's own address behind a VPN or NAT. <b>Lost the token?</b> It cannot be shown again. Run <code>execute api-user generate-key cis_checker_api</code> for a new one; the old one stops working.</p>
+</div></div></div></section>
 
 <section class="dark" id="start"><div class="wrap"><div class="sec">
-<div class="mono"><b>05</b> — Start</div>
+<div class="mono"><b>07</b> — Start</div>
 <div><h2>From clone to report in a few commands.</h2>
 <p class="sub">Create the read-only API user first: <a href="https://github.com/ERROR-SIDDH/fortigate_cis_checker/blob/main/docs/setup_readonly_user.md">setup guide ↗</a>. Use <code>--insecure</code> only in a lab with the factory self-signed certificate.</p>
 <div class="tabs" id="tabs"><button class="on" data-t="scan">Scan</button><button data-t="console">Fix console</button></div>
@@ -167,7 +285,28 @@ const C=[["1.1",1,"Admin password minimum length",1],["1.2",1,"Admin lockout thr
 ["1.9",1,"Strong cryptography enforced",1],["1.10",1,"HTTP admin redirected to HTTPS",1],["1.11",1,"Admin HTTPS refuses TLS 1.0 and 1.1",1],["1.12",1,"Maintainer recovery account disabled",1],["1.13",1,"Static-key TLS ciphers disabled",1],["1.14",2,"Config revision saved on logout",1],["1.15",2,"SCP config download disabled",1],
 ["2.1",1,"SNMP disabled or v3-only",0],["2.2",1,"NTP synchronisation enabled",1],["3.1",1,"Logs sent to remote syslog or FortiAnalyzer",0],["3.2",1,"Every accept policy logs traffic",0]];
 let F='all';const fl=$('#flt');[['all','All 19'],['1','Level 1'],['2','Level 2'],['fx','Auto-fix']].forEach(([k,l])=>{const b=document.createElement('button');b.className='fb'+(k==='all'?' on':'');b.textContent=l;b.onclick=()=>{F=k;fl.querySelectorAll('.fb').forEach(x=>x.classList.toggle('on',x===b));draw()};fl.append(b)});
-function draw(){$('#tb').innerHTML=C.filter(c=>F==='all'||(F==='fx'?c[3]:String(c[1])===F)).map(c=>`<tr><td class="id">${c[0]}</td><td class="lv">L${c[1]}</td><td>${c[2]}</td><td class="fx" style="color:${c[3]?'var(--green)':'var(--mute)'}">${c[3]?'one-click':'manual'}</td></tr>`).join('')}draw();
+const D={
+"1.1":["Short passwords fall quickly to guessing and brute force.","system/password-policy: status, minimum-length","Policy enabled and minimum length ≥ 14.","config system password-policy → set status enable, set minimum-length 14","Existing passwords are not rewritten; only new or changed ones are held to the rule."],
+"1.2":["Limits online password guessing against the admin login.","system/global: admin-lockout-threshold, admin-lockout-duration","Threshold 1 to 3 and duration ≥ 60 s. A threshold of 0 (disabled) fails.","config system global → set admin-lockout-threshold 3, set admin-lockout-duration 60","A legitimate admin who mistypes three times is locked out for a minute."],
+"1.3":["An unattended logged-in session can be used by someone else.","system/global: admintimeout (minutes)","1 to 5 minutes.","set admintimeout 5",""],
+"1.4":["Both send credentials and sessions in clear text.","system/interface: allowaccess on every interface","No interface lists http or telnet.","Per interface: set allowaccess https ssh (add ping if needed)","No auto-fix: removing access on the interface you are connected through locks you out."],
+"1.5":["A legal notice supports prosecution and sets expectations for authorised use.","system/global: pre-login-banner","enable","set pre-login-banner enable","The auto-fix turns the banner on but does not write your wording. Customise via config system replacemsg admin pre_admin-disclaimer-text."],
+"1.6":["A USB stick could load a configuration or firmware image without anyone logging in.","system/auto-install: auto-install-config, auto-install-image","Both disable.","Set both to disable.",""],
+"1.7":["Requiring mixed character types raises guessing cost.","system/password-policy: min-lower-case-letter, min-upper-case-letter, min-number, min-non-alphanumeric","All four ≥ 1. Otherwise WARN, not FAIL, since this is a policy choice.","Set each minimum to 1.",""],
+"1.8":["admin is the first username every attacker tries.","system/admin: the entry named admin","No account named admin, or admin has a trusthost1 other than 0.0.0.0 0.0.0.0.","Restrict trusthost1 to your management subnet, or create a differently named admin and remove admin.","Only trusthost1 is inspected, not trusthost2 onward."],
+"1.9":["Forces strong ciphers and protocol versions across services.","system/global: strong-crypto","enable","set strong-crypto enable","Very old clients that only support weak ciphers will stop connecting."],
+"1.10":["Stops credentials being typed into a plain HTTP page.","system/global: admin-https-redirect","enable","set admin-https-redirect enable",""],
+"1.11":["Both versions are deprecated and have known weaknesses.","system/global: admin-https-ssl-versions","Set, and contains neither tlsv1-0 nor tlsv1-1.","set admin-https-ssl-versions tlsv1-2 tlsv1-3","An old browser or script limited to TLS 1.0/1.1 loses admin GUI access."],
+"1.12":["The console maintainer account gives password-recovery access to anyone with physical or serial access.","system/global: admin-maintainer","disable","set admin-maintainer disable","Removes a recovery route if every admin password is lost. Keep a tested recovery plan."],
+"1.13":["Static-key ciphers lack forward secrecy; a stolen key decrypts recorded traffic.","system/global: ssl-static-key-ciphers","disable","set ssl-static-key-ciphers disable",""],
+"1.14":["Keeps a history so an unwanted change can be rolled back and attributed.","system/global: revision-backup-on-logout","enable","set revision-backup-on-logout enable",""],
+"1.15":["SCP lets an admin download the whole configuration, including secrets, over SSH.","system/global: admin-scp","disable","set admin-scp disable","Anything that backs up the device over SCP will stop working."],
+"2.1":["SNMP v1/v2c use a shared community string sent in clear text.","system.snmp/sysinfo: status; system.snmp/community","SNMP disabled, or enabled with zero v1/v2c communities.","Disable SNMP, or remove all v1/v2c communities and use SNMPv3.","SNMPv3 users themselves are not inspected."],
+"2.2":["Correct timestamps are essential for log correlation and investigations.","system/ntp: ntpsync","enable","set ntpsync enable","Reachability of the configured servers is not verified."],
+"3.1":["Logs stored only on the device can be erased by an intruder or lost with it.","log.syslogd/setting: status, server","Enabled and a server set.","config log syslogd setting → set status enable, set server <ip>","Only the first syslog target is checked, not FortiAnalyzer. No auto-fix: it needs a server address only you know."],
+"3.2":["Without traffic logs you cannot see what the firewall allowed.","firewall/policy: action, logtraffic","Every accept policy has logtraffic all or utm.","Per policy: set logtraffic all","No auto-fix: per-policy edits, and full logging can raise log volume noticeably."]};
+function draw(){const e=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');$('#tb').innerHTML=C.filter(c=>F==='all'||(F==='fx'?c[3]:String(c[1])===F)).map(c=>{const d=D[c[0]];return `<tr class="ctl" data-id="${c[0]}"><td class="id">${c[0]}</td><td class="lv">L${c[1]}</td><td>${c[2]}</td><td class="fx" style="color:${c[3]?'var(--green)':'var(--mute)'}">${c[3]?'one-click':'manual'}</td></tr><tr class="det" data-d="${c[0]}"><td colspan="4"><dl><dt>Why</dt><dd>${e(d[0])}</dd><dt>Reads</dt><dd><code>${e(d[1])}</code></dd><dt>Passes when</dt><dd>${e(d[2])}</dd><dt>Fix</dt><dd><code>${e(d[3])}</code></dd>${d[4]?`<dt>Caution</dt><dd>${e(d[4])}</dd>`:''}</dl></td></tr>`}).join('')}
+$('#tb').onclick=e=>{const r=e.target.closest('tr.ctl');if(!r)return;r.classList.toggle('open');$('#tb').querySelector(`[data-d="${r.dataset.id}"]`).classList.toggle('open')};draw();
 /* diff */
 (()=>{const L=[["strong-crypto","disable","enable"],["admin-maintainer","enable","disable"],["admin-scp","enable","disable"]];
 const set=a=>{$('#df').innerHTML=L.map(l=>a?`<span class="del">- set ${l[0]} ${l[1]}</span>\n<span class="add">+ set ${l[0]} ${l[2]}</span>`:`  set ${l[0]} ${l[1]}`).join('\n');
