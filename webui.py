@@ -80,14 +80,16 @@ const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=nu
 const toast=(m,bad)=>{const t=el('div','t'+(bad?' bad':''),m);$('toast').append(t);setTimeout(()=>t.remove(),4500)};
 const phases=['Connecting to the firewall…','Reading admin & password policy…','Inspecting interfaces & SNMP…','Checking logging & policies…','Scoring results…'];
 async function scan(){
-  $('rescan').disabled=true;$('results').style.display='none';$('scan').style.display='block';
+  $('rescan').disabled=true;$('results').style.display='none';$('ring').style.display='';$('scan').style.display='block';
   $('skel').replaceChildren(...[...Array(6)].map(()=>el('div','sk')));
   let i=0;const iv=setInterval(()=>{$('phase').textContent=phases[Math.min(++i,phases.length-1)]},1100);
   try{
-    const [r]=await Promise.all([fetch('/api/scan'),new Promise(r=>setTimeout(r,1800))]);
+    const [r]=await Promise.all([fetch('/api/scan',{signal:AbortSignal.timeout(60000)}),new Promise(r=>setTimeout(r,1800))]);
     if(!r.ok)throw new Error(await r.text());
     const j=await r.json();DATA=j.results;$('target').textContent=j.target+' · scanned '+new Date().toLocaleTimeString();render();
-  }catch(e){toast('Scan failed: '+e.message,1)}
+  }catch(e){const m=e.name==='TimeoutError'?'The firewall did not answer within 60 s. Check the host, VPN and network, then rescan.':e.message;
+    $('results').style.display='block';$('ring').style.display='none';$('stats').replaceChildren();$('filters').replaceChildren();
+    const c=el('div','card');c.style.borderLeft='4px solid var(--bad)';c.append(el('b','','Scan failed'),el('p','',m));$('list').replaceChildren(c);toast('Scan failed',1)}
   clearInterval(iv);$('scan').style.display='none';$('skel').replaceChildren();$('rescan').disabled=false;
 }
 function render(){
@@ -119,6 +121,7 @@ $('rescan').onclick=scan;scan();
 
 def build_ctx(args) -> RuleContext:
     c = FortiGateAPIClient(args.host, os.environ["FGT_API_TOKEN"], args.port, not args.insecure, vdom=args.vdom)
+    c.get_system_status()  # fail fast (401, unreachable) instead of timing out once per rule
     return RuleContext(backend="api", cmdb_fetch=c.cmdb, monitor_fetch=c.monitor)
 
 
